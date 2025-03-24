@@ -5,7 +5,7 @@
 A = 0; %Área para a troca de calor 
 CA = 0; %Concentração de área no reator
 CAf = 0; %Concentração de área no fluxo de alimentação
-Cp = 0; %Capacidade de calor em energia pora massa*temperatura
+Cp = 0; %Capacidade de calor em energia pora massa*temperaturahttps://www.skyscanner.com.br/hotels/search?entity_id=46994211&checkin=2025-05-28&checkout=2025-05-29&adults=2&rooms=1&sort=price&currency=BRL
 F = 0; %Fluxo volumétrico
 k0 = 0; %fator pré exponencial
 R = 0; %Constante ideal de gás
