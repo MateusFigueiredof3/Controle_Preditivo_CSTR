@@ -136,7 +136,7 @@ G11 = tf(K11, [T11 1], 'iodelay', L11);
 CaF_Simulado = lsim(G11, F_degrau - F, t);
 emqG11 = mean((Ca_degrau_F - (CaF_Simulado+Ca_degrau_F(1))).^2);
 
-%{
+
 figure(2)
 plot(t, Ca_degrau_F,'--', t, CaF_Simulado+Ca_degrau_F(1));
 title("Resposta ao degrau para a saída Ca e a entrada F e a identificação realizada")
@@ -144,7 +144,7 @@ xlabel("t (hora)");
 ylabel("Ca (kgmol/m³");
 legend('Modelo não linear', 'Modelo G11 identificado', 'Location', 'east');
 grid on;
-%}
+
 
 %Repetindo o processo para G12
 du1 = 0; du2 = 0.007; du3 = 0; du4 = 0;
@@ -167,7 +167,7 @@ G12 = tf(K12, [T12 1], 'iodelay', L12);
 Cb_F_simulado = lsim(G12, F_degrau - CAf, t);
 emqG12 = mean((Cb_degrau_F - (Cb_F_simulado+Cb_degrau_F(1))).^2);
 
-%{
+
 figure(4)
 plot(t, Cb_degrau_F,'--', t, Cb_F_simulado+Cb_degrau_F(1));
 title("Resposta ao degrau para a saída Ca e a entrada F e a identificação realizada")
@@ -175,7 +175,7 @@ xlabel("t (hora)");
 ylabel("Ca (kgmol/m³");
 legend('Modelo não linear', 'Modelo G12 identificado', 'Location', 'east');
 grid on;
-%}
+
 
 %G13
 du1 = 0; du2 = 0; du3 = 1; du4 = 0;
@@ -199,7 +199,7 @@ grid on;
 G13 = tf(K13, [T13 1], 'iodelay', L13);
 CaF_Simulado = lsim(G13, CaF_degrau - Tf, t);
 emqG13 = mean((Ca_degrau_Caf - (CaF_Simulado+Ca_degrau_Caf (1))).^2);
-%{
+
 figure(6)
 
 plot(t,Ca_degrau_Caf , '--', t,CaF_Simulado+Ca_degrau_Caf (1))
@@ -210,7 +210,7 @@ legend('Modelo não linear', 'Modelo G13 identificado', 'Location', 'Best');
 xlabel('t (h)');
 ylabel('Ca (kgmol/m^3)');
 
-%}
+
 
 du1 = 0; du2 = 0; du3 = 0; du4 = 1;
 sim('modeloNL.slx');
@@ -221,7 +221,7 @@ CaF_degrau = simNL.signals.values(:,6);
 %{
 figure(7)
 plot(t,Cb_degrau_Caf)
-title('Teste do degrau para saída Ca e entrada Tj com variação dTj = 1 K');
+title('Resposta ao degrau para saída Ca e entrada Tj com variação de 1 K');
 grid on;
 xlabel('t (h)');
 ylabel('Ca (kgmol/m^3)');
@@ -231,14 +231,14 @@ G14 = tf(K14, [T14 1], 'iodelay', L14);
 Cb_F_simulado = lsim(G14, CaF_degrau - Tj, t);
 emqG14 = mean((Cb_degrau_Caf - (Cb_F_simulado+Cb_degrau_Caf(1))).^2);
 
-%{
+
 figure(8)
 plot(t,Cb_degrau_Caf, '--', t,Cb_F_simulado+Cb_degrau_Caf(1), '-')
-title('Comparação entre o teste do degrau e simulação de G14 identificado');
+title('Resposta ao degrau para saída Ca e entrada Tj com variação de 1 K e a identificação realizada');
 grid on;
 legend('Modelo não linear', 'Modelo G14 identificado', 'Location', 'Best');
 xlabel('t (h)');
 ylabel('Ca (kgmol/m^3)');
-%}
+
 
 %% Controle em malha fechada
