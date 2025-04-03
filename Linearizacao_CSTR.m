@@ -46,10 +46,10 @@ f1 = dCa;
 f2 = dT;
 %definição dos valores:
 %Caso 2:
-A11 = diff(f1, CA); %o que seria referenciado ao CAs que é atribuído no bequette, onde o subscrito s denota o valor estacionário, não adotado aq.
-A12 = diff(f1, T);
-A21 = diff(f2, CA);
-A22 = diff(f2, T);
+% A11 = diff(f1, CA); %o que seria referenciado ao CAs que é atribuído no bequette, onde o subscrito s denota o valor estacionário, não adotado aq.
+% A12 = diff(f1, T);
+% A21 = diff(f2, CA);
+% A22 = diff(f2, T);
 
 V = 1;  % m^3
 deltaE = 11843;  % J/mol
@@ -114,4 +114,47 @@ dF = 0.01;
 dCAf = 0;
 dTf = 0;
 dTj = 0; 
-du1 = 0.01; du2 = 0; du3 = 0; du4 = 0;
+du1 = 0.0; du2 = 0.00; du3 = 1; du4 = 0;
+
+%% Extrai os dados da simulação
+simData = out.simDiscreto;
+
+% Verifica a estrutura dos dados (para debug)
+% whos simData
+% disp(simData)
+
+% Extrai o vetor de tempo (assumindo que está na primeira coluna)
+time = simData.time;
+
+% Extrai as saídas (assumindo a ordem: contínuo, Ta=0.2s, Ta=0.6s, Ta=1s)
+output_cont = simData.signals.values(:,1);  % Sistema contínuo
+output_02s  = simData.signals.values(:,2);  % Ta = 0.2s
+output_06s  = simData.signals.values(:,3);  % Ta = 0.6s
+output_1s   = simData.signals.values(:,4);  % Ta = 1s
+
+% Configurações do gráfico
+figure;
+hold on;
+grid on;
+set(gcf, 'Color', 'w');  % Fundo branco
+
+% Plota a resposta contínua (referência)
+plot(time, output_cont, 'LineWidth', 1, 'DisplayName', 'Contínuo');
+
+% Plota as respostas discretas com marcadores
+stairs(time, output_02s,  'LineWidth', 1, 'DisplayName', 'T_a = 0.2s');
+stairs(time, output_06s, 'LineWidth', 1, 'DisplayName', 'T_a = 0.6s');
+stairs(time, output_1s,  'LineWidth', 1, 'DisplayName', 'T_a = 1s');
+
+
+
+% Configurações adicionais
+title('Comparação de Tempos de Amostragem no CSTR');
+xlabel('Tempo (s)');
+ylabel('Concentração CA (kgmol/m^3)');
+legend('Location', 'best');
+
+% Ajusta limites para melhor visualização
+xlim([0 time(end)]);
+
+hold off;

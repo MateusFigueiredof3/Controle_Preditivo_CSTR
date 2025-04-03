@@ -114,45 +114,52 @@ dF = 0.01;
 dCAf = 0;
 dTf = 0;
 dTj = 0; 
-du1 = 0.01; du2 = 0; du3 = 0; du4 = 0;
+
 
 %% Identificação
 %Mesmo procedimento do laboratório de digital
-sim('modeloNL.slx');
+
+% Entradas utilizadas
+du1 = 0.01; du2 = 0; du3 = 0; du4 = 0;
+
+% Realizar simulação não-linear
+sim('modeloNL_2022a.slx');
 simulacao_nao_linear = ans.simNL;
 t = simulacao_nao_linear.time;
 Ca_degrau_F = simulacao_nao_linear.signals.values(:,1);
 F_degrau = simulacao_nao_linear.signals.values(:,3);
-%{
-figure(1)
-plot(t,Ca_degrau_F)
-title("Resposta ao degrau para a saída Ca e a entrada F, tendo variação de 0.01 metros cúbicos por hora")
-xlabel("t (hora)");
-ylabel("Ca (kgmol/m³");
-grid on;
-%}
+
+% Estimar parâmetros com dados do modelo simulado
 [K11, T11, L11] = modeloDegrau(Ca_degrau_F - Ca_degrau_F(1), F_degrau-F, t(end)-t(end-1));
 G11 = tf(K11, [T11 1], 'iodelay', L11);
 CaF_Simulado = lsim(G11, F_degrau - F, t);
 emqG11 = mean((Ca_degrau_F - (CaF_Simulado+Ca_degrau_F(1))).^2);
 
+% Realizar simulação do modelo discreto e identificação
+sim('modeloDiscreto_2022a.slx')
+simData = out.simDiscreto;
+output_02s_Ca = simData.signals.values(:,2);  % Ta = 0.2s
+time = simData.time;
+[K11d, T11d, L11d] = modeloDegrau(output_02s_Ca - output_02s_Ca(1), F_degrau-F, time(end)-time(end-1));
+G11d = tf(K11d, [T11d 1], 'iodelay', L11d);
+CaFd_Simulado = lsim(G11d, F_degrau - F, time);
 
 figure(2)
-plot(t, Ca_degrau_F,'--', t, CaF_Simulado+Ca_degrau_F(1));
+plot(t, Ca_degrau_F,'--', t, CaF_Simulado+Ca_degrau_F(1),t,output_02s_Ca, t, CaFd_Simulado+Ca_degrau_F(1) );
 title("Resposta ao degrau para a saída Ca e a entrada F e a identificação realizada")
 xlabel("t (hora)");
 ylabel("Ca (kgmol/m³");
-legend('Modelo não linear', 'Modelo G11 identificado', 'Location', 'east');
+legend('Modelo não linear', 'Modelo G11 identificado', 'Modelo linearizado discretizado','Modelo G11 identificado discreto', 'Location', 'east');
 grid on;
 
 
-%Repetindo o processo para G12
+%% Repetindo o processo para G12
 du1 = 0; du2 = 0.007; du3 = 0; du4 = 0;
-sim('modeloNL.slx');
+sim('modeloNL_2022a.slx');
 simulacao_nao_linear = ans.simNL;
 t = simulacao_nao_linear.time;
 Cb_degrau_F = simulacao_nao_linear.signals.values(:,1);
-F_degrau = simulacao_nao_linear.signals.values(:,4);
+F_degrau = simulacao_nao_linear.signals.values(:,4); % Valor degrau CAf
 
 %{
 figure(3)
@@ -168,77 +175,92 @@ Cb_F_simulado = lsim(G12, F_degrau - CAf, t);
 emqG12 = mean((Cb_degrau_F - (Cb_F_simulado+Cb_degrau_F(1))).^2);
 
 
+% Realizar simulação do modelo discreto e identificação
+sim('modeloDiscreto_2022a.slx');
+simData = out.simDiscreto;
+output_02s_Ca = simData.signals.values(:,2);  % Ta = 0.2s
+time = simData.time;
+[K12d, T12d, L12d] = modeloDegrau(output_02s_Ca - output_02s_Ca(1), F_degrau-CAf, time(end)-time(end-1));
+G12d = tf(K12d, [T12d 1], 'iodelay', L12d);
+CaFd_Simulado = lsim(G12d, F_degrau - CAf, time);
+
+%%
+
 figure(4)
-plot(t, Cb_degrau_F,'--', t, Cb_F_simulado+Cb_degrau_F(1));
-title("Resposta ao degrau para a saída Ca e a entrada F e a identificação realizada")
+plot(t, Cb_degrau_F,'--', t, Cb_F_simulado+Cb_degrau_F(1), t, output_02s_Ca, t, CaFd_Simulado+Cb_degrau_F(1));
+title("Resposta ao degrau para a saída Ca e a entrada CAf e a identificação realizada")
 xlabel("t (hora)");
 ylabel("Ca (kgmol/m³");
-legend('Modelo não linear', 'Modelo G12 identificado', 'Location', 'east');
+legend('Modelo não linear', 'Modelo G12 identificado','Modelo linearizado discretizado','Modelo G12 identificado discreto', 'Location', 'east');
 grid on;
 
+%% Resposta ao degrau para a saída Ca e a entrada T, tendo variação de 1 K
 
 %G13
 du1 = 0; du2 = 0; du3 = 1; du4 = 0;
-sim('modeloNL.slx');
+sim('modeloNL_2022a.slx');
 simulacao_nao_linear = ans.simNL;
 t = simulacao_nao_linear.time;
 Ca_degrau_Caf = simulacao_nao_linear.signals.values(:,1);
 CaF_degrau = simulacao_nao_linear.signals.values(:,5);
-
-%{
-figure(5)
-
-plot(t,Ca_degrau_Caf)
-title("Resposta ao degrau para a saída Ca e a entrada T, tendo variação de 1 K");
-xlabel("t (hora)");
-ylabel("Ca (kgmol/m³");
-grid on;
-%}
 
 [K13, T13, L13] = modeloDegrau(Ca_degrau_Caf - Ca_degrau_Caf (1), CaF_degrau - Tf, t(end)-t(end-1));
 G13 = tf(K13, [T13 1], 'iodelay', L13);
 CaF_Simulado = lsim(G13, CaF_degrau - Tf, t);
 emqG13 = mean((Ca_degrau_Caf - (CaF_Simulado+Ca_degrau_Caf (1))).^2);
 
+% Realizar simulação do modelo discreto e identificação
+sim('modeloDiscreto_2022a.slx');
+simData = out.simDiscreto;
+output_02s_Ca = simData.signals.values(:,2);  % Ta = 0.2s
+time = simData.time;
+[K13d, T13d, L13d] = modeloDegrau(output_02s_Ca - output_02s_Ca(1), CaF_degrau - Tf, time(end)-time(end-1));
+G13d = tf(K13d, [T13d 1], 'iodelay', L13d);
+CaFd_Simulado = lsim(G13d, CaF_degrau - Tf, time);
+
+
+
+%%
 figure(6)
+plot(t,Ca_degrau_Caf , '--', t,CaF_Simulado+Ca_degrau_Caf (1), t, output_02s_Ca, t, CaFd_Simulado+output_02s_Ca(1))
 
-plot(t,Ca_degrau_Caf , '--', t,CaF_Simulado+Ca_degrau_Caf (1))
-
-title('Resposta ao degrau para a saída Ca e a entrada T e a identificação realizada');
+title('Resposta ao degrau para a saída Ca e a entrada Tf e a identificação realizada');
 grid on;
-legend('Modelo não linear', 'Modelo G13 identificado', 'Location', 'Best');
+legend('Modelo não linear', 'Modelo G13 identificado','Modelo linearizado discretizado','Modelo G13 identificado discreto', 'Location', 'Best');
 xlabel('t (h)');
 ylabel('Ca (kgmol/m^3)');
 
-
+%% G14 Resposta ao degrau para saída Ca e entrada Tj com variação de 1 K
 
 du1 = 0; du2 = 0; du3 = 0; du4 = 1;
-sim('modeloNL.slx');
+sim('modeloNL_2022a.slx');
 simNL = ans.simNL;
 t = simNL.time;
 Cb_degrau_Caf = simNL.signals.values(:,1);
 CaF_degrau = simNL.signals.values(:,6);
-%{
-figure(7)
-plot(t,Cb_degrau_Caf)
-title('Resposta ao degrau para saída Ca e entrada Tj com variação de 1 K');
-grid on;
-xlabel('t (h)');
-ylabel('Ca (kgmol/m^3)');
-%}
+
 [K14, T14, L14] = modeloDegrau(Cb_degrau_Caf - Cb_degrau_Caf(1), CaF_degrau - Tj, t(end)-t(end-1));
 G14 = tf(K14, [T14 1], 'iodelay', L14);
 Cb_F_simulado = lsim(G14, CaF_degrau - Tj, t);
 emqG14 = mean((Cb_degrau_Caf - (Cb_F_simulado+Cb_degrau_Caf(1))).^2);
 
+% Realizar simluação do modelo discreto e identificação
+sim('modeloDiscreto_2022a.slx');
+simData = out.simDiscreto;
+output_02s_Ca = simData.signals.values(:,2);  % Ta = 0.2s
+time = simData.time;
+[K14d, T14d, L14d] = modeloDegrau(output_02s_Ca - output_02s_Ca(1), CaF_degrau - Tj, time(end)-time(end-1));
+G14d = tf(K14d, [T14d 1], 'iodelay', L14d);
+CaFd_Simulado = lsim(G14d, CaF_degrau - Tj, time);
+
+
+%% 
 
 figure(8)
-plot(t,Cb_degrau_Caf, '--', t,Cb_F_simulado+Cb_degrau_Caf(1), '-')
-title('Resposta ao degrau para saída Ca e entrada Tj com variação de 1 K e a identificação realizada');
+plot(t,Cb_degrau_Caf, '--', t,Cb_F_simulado+Cb_degrau_Caf(1), t, output_02s_Ca, t, CaFd_Simulado+output_02s_Ca(1))
+title('Resposta ao degrau para saída Ca e a entrada Tj e a identificação realizada');
 grid on;
-legend('Modelo não linear', 'Modelo G14 identificado', 'Location', 'Best');
+legend('Modelo não linear', 'Modelo G14 identificado','Modelo linearizado discretizado','Modelo G14 identificado discreto', 'Location', 'Best');
 xlabel('t (h)');
 ylabel('Ca (kgmol/m^3)');
 
-
-%% Controle em malha fechada
